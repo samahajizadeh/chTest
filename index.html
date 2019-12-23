@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <!-- METADATA -->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimal-ui"/>
+    <meta name="description" content=""/>
+    <meta property="og:title" content=" شرکت چابک"/>
+
+    <!-- PAGE TITLE -->
+    <title>شرکت چابک</title>
+
+    <!--[if lt IE 9]>
+    <script src="script/html5shiv.min.js"></script>
+    <![endif]-->
+
+    <!-- BOOTSTRAP -->
+    <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css"/>
+
+    <link rel="stylesheet" href="fonts/iransans/iransans.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="styles/main.css"/>
+    <!-- endinject -->
+
+    <!-- Joint CSS -->
+    <link rel="stylesheet" href="node_modules/jointjs/dist/joint.min.css">
+    <!-- JointJS Dependencies -->
+    <script src="node_modules/jquery/dist/jquery.min.js"></script>
+    <script src="node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+
+    <script src="node_modules/lodash/lodash.min.js"></script>
+    <script src="node_modules/backbone/backbone.js"></script>
+    <!-- JointJS -->
+    <script src="node_modules/jointjs/dist/joint.min.js"></script>
+
+</head>
+<body>
+<div class="main">
+    <!--
+    =================================
+    MENU SECTION
+    =================================
+    -->
+    <aside class="menubar">
+        <div class="sidebar left">
+            <ul class="list-sidebar panel-group" id="openMenu">
+                <li class="panel">
+                    <a data-toggle="collapse" data-target="#action" class="collapsed active" data-parent="#openMenu">
+                        <span class="nav-label">ACTION</span> <span
+                            class="fa fa-chevron-down pull-right"></span> </a>
+                    <ul class="sub-menu collapse show" id="action">
+                        <li id="actionControl"></li>
+                    </ul>
+                </li>
+                <li class="panel">
+                    <a data-toggle="collapse" data-target="#condition" class="collapsed active" data-parent="#openMenu">
+                        <span class="nav-label">CONDITION</span> <span
+                            class="fa fa-chevron-down pull-right"></span> </a>
+                    <ul class="sub-menu collapse show" id="condition">
+                        <li id="conditionControl"></li>
+                    </ul>
+                </li>
+                <li class="panel">
+                    <a data-toggle="collapse" data-target="#flowControlMenu" class="active" data-parent="#openMenu">
+                        <span class="nav-label">FLOW CONTROL</span>
+                        <span class="fa fa-chevron-down pull-right"></span> </a>
+                    <ul class="sub-menu collapse show" id="flowControlMenu">
+                        <li id="flowControl"></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </aside>
+    <!--
+    =================================
+    CONTENT SECTION
+    =================================
+    -->
+    <main class="main-content">
+        <div id="paper">
+        </div>
+        <div class="zoom">
+            <div class="zoomContainer">
+                <div id="zoomCanvas"></div>
+                <div class="current-view">
+                    <div class="current-view-control"></div>
+                </div>
+            </div>
+
+<!--            <button onclick="f()">r</button>-->
+            <div class="btn-zoom">
+                <div id="zoom-in" title="Zoom in"><i class="fa fa-plus"></i></div>
+                <div id="zoom-out" title="Zoom out"><i class="fa fa-minus"></i></div>
+                <div id="zoom-reset" title="Reset"><i class="fa fa-undo"></i></div>
+
+            </div>
+        </div>
+
+        <div class="snaplines" style="display: none;">
+            <div class="snapline horizontal"></div>
+            <div class="snapline vertical"></div>
+        </div>
+    </main>
+</div>
+
+<script src="scripts/script.js"></script>
+</body>
+</html>

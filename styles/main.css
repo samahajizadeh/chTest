@@ -116,12 +116,14 @@ select {
  * ========================================
  */
 .main{
-    position: static;
+    position: relative;
     height: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+    /*background:#ece9e9;*/
 }
 #paper{
     background-color: #fff;
-    overflow: auto;
     cursor:grab;
 }
 #paper:active{
@@ -132,6 +134,19 @@ select {
     -moz-transition: all ease-in .4s;
     transition: all ease-in .4s;
     font-size: 20px;
+}
+
+.paper-scroller{
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    margin: 0;
+    position: relative;
+    display: inline-block;
+    overflow: scroll;
+    cursor: grabbing;
+    box-sizing: border-box;
+    visibility:visible;
 }
 
 .snaplines{
@@ -149,15 +164,25 @@ select {
 }
 .snapline.horizontal {
     border-bottom: 1px solid #2ecc71;
+    width: 100%;
+}
+
+.snapline.vertical {
+    height: 100%;
+    border-right: 1px solid #2ecc71;
+}
+
+
+.paper-scroller .snaplines > .snapline.horizontal {
     width: 700%;
     left: -300%
 }
 
-.snapline.vertical {
+.paper-scroller .snaplines > .snapline.vertical {
     height: 700%;
-    top: -300%;
-    border-bottom: 1px solid #2ecc71;
+    top: -300%
 }
+
 
 /*.joint-port:hover ~.ports{
     opacity: 1;
@@ -172,66 +197,80 @@ select {
 
 
 /* port styling */
-.available-magnet {
+/*.available-magnet {
     fill: yellow;
-}
+}*/
 
-.zoom{
-    width: 345px;
-    height: 150px;
-    position: fixed;
-    right: 20px;
-    bottom: 25px;
-    overflow: hidden;
-}
+/*.available-magnet{
+    strok:none
+}*/
+
 .zoomContainer{
-    margin:1rem;
-    right: 20px;
-    /*width: 200px;
-    height: 200px;*/
-    background: #fff;
     position: fixed;
-    box-shadow: 0 1px 5px 0 rgba(32, 33, 36, .28) ;
+    right: 20px;
+    bottom: 20px;
+    box-sizing: inherit;
+    z-index: 3;
+    background: #fff;
+    box-shadow: 0 1px 5px 0 rgba(32, 33, 36, .28);
     -webkit-box-shadow: 0 1px 5px 0 rgba(32, 33, 36, .28);
-    overflow: hidden;
-    text-align: center;
-    vertical-align: middle;
-    padding: 10px;
-    bottom: 10px;
+    z-index: 3;
+    overflow:hidden;
+}
+.navigator{
+    width: 208px;
+    height: 104px;
+    padding: 7px 5px;
 }
 #zoomCanvas{
-    border: 1px solid #d3d3d3;
     position: relative;
-    display: inline-block;
-}
-.btn-zoom{
-    width: 40px;
-    right: 330px;
-    /*right: 250px;*/
-    height: 150px;
-    position: fixed;
-    background: #fff;
+    overflow: hidden;
+    box-sizing: border-box;
+    background: #ff3759;
     text-align: center;
     vertical-align: middle;
-    padding-top: 20px;
+    margin: 0 auto;
+
+}
+#zoomCanvas .paper{
+    background: #fff;
+    height: 100%;
+    box-shadow: none;
+    display: inline-block;
+    cursor: pointer;
+}
+.btn-zoom{
+    position: fixed;
+    padding: 0 6px;
+    background: #fff;
+    bottom: 20px;
+    right: 236px;
+    z-index: 3;
+    text-align: center;
+    vertical-align: middle;
     box-shadow: 0 1px 5px 0 rgba(32, 33, 36, .28);
     -webkit-box-shadow: 0 1px 5px 0 rgba(32, 33, 36, .28);
 }
 
 .btn-zoom i.fa{
     cursor: pointer;
-    padding: 10px;
-    color: #ccc;
+    font-size: 11px;
+    line-height: 34px;
+    text-align: center;
+    color: #bbbcc1;
+    border-bottom: 1px solid #eaeaea;
+    box-sizing: inherit;
+    vertical-align: middle;
 
 
 }
 .current-view {
     border: 2px solid #31d0c6;
-    /*position: absolute;*/
     cursor: move;
     margin: -2px 0 0 -2px;
     position: absolute;
-    top: 10px;
+    top: 5px;
+    left: 5px;
 }
 
 .current-view-control {
@@ -247,11 +286,11 @@ select {
     background: #fff;
 }
 .main-content{
-    margin-left: 220px;
-    transition: all 0.5s ease-in-out;
-    z-index: 0;
+    left: 235px;
+    width: calc(100% - 235px);
     height: 100%;
-    position:fixed;
+    z-index: 2;
+    position: absolute;
 }
 
 .sub-menu li{
@@ -259,6 +298,9 @@ select {
 }
 
 
+#toast-container > .toast-error {
+    background-image: none !important;
+}
 /**
  * ========================================
  * SIDEBAR
@@ -267,28 +309,17 @@ select {
 .sidebar {
     position: absolute;
     width: 235px;
+    height: 100%;
     transition: all 0.5s ease-in-out;
-    top: 20px;
-    bottom: 0;
+    padding-top: 20px;
     left: 0;
     z-index: 1;
-}
-
-.menubar:before {
-    content: "";
-    position: fixed;
-    display: block;
-    width: 235px;
-    bottom: 0;
-    top: 0;
     background-color: #273646;
     -webkit-box-shadow: 0 0 10px 0 rgba(0, 0, 0, .2);
     -moz-box-shadow: 0 0 10px 0 rgba(0, 0, 0, .2);
     box-shadow: 0 0 10px 0 rgba(0, 0, 0, .2);
     transition: all 0.5s ease-in-out;
-    z-index: 1;
 }
-
 
 .sidebar ul {
     list-style: none;
@@ -371,6 +402,3 @@ select {
     -ms-transform: rotate(-90deg);
     transform: rotate(-90deg);
 }
-
-
-

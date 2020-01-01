@@ -4,6 +4,7 @@ function createLink() {
             '.marker-target': {d: 'M 10 0 L 0 5 L 10 10 z', fill: '#ccc', stroke: '#ccc'},
             '.connection': {stroke: "#ccc", strokeWidth: 3},
             '.marker-source': {fill: 'black', stroke: 'black', d: 'M 0 0 L 0 0'},
+
         },
         labels: [{
             position: 0.5,
@@ -13,7 +14,7 @@ function createLink() {
                     fontWeight: 'bold',
                 }
             }
-        }]
+        }],
     });
     return link;
 }
@@ -49,7 +50,11 @@ var portsList = {
         },
         attrs: {
             '.port-label': {
-                dx: 20
+                'text': 'out',
+                'font-size': 9,
+                'font-weight': 'bold',
+                'fill': '#ccc',
+                dx: 235
             },
             '.port-body': {
                 d: "M2.204364238465236e-15,-36A36,36 0 1,1 2.204364238465236e-15,36L0,0Z",
@@ -291,8 +296,8 @@ var portsList = {
 };
 
 var config = {
-    paperWidth: 1200,
-    paperHeight: 1200
+    paperWidth: 1800,
+    paperHeight: 1800
 };
 
 // Canvas where shape are dropped
@@ -306,7 +311,17 @@ var graph = new joint.dia.Graph,
         drawGrid: true,
         model: graph,
         async: true,
-        // restrictTranslate: false,
+        /* interactive: {
+             vertexAdd: false,
+             vertexMove: false,
+             vertexRemove: false,
+             arrowheadMove: false
+         },*/
+        restrictTranslate:true,
+        markAvailable: true,
+        snapLinks: {
+            radius: 75
+        },
         validateMagnet: function (cellView, magnet) {
             return magnet.getAttribute('magnet') !== 'passive';
         },
@@ -321,21 +336,8 @@ var graph = new joint.dia.Graph,
             var link = createLink();
             link.prop(['labels', 0, 'attrs', 'text', 'text'], magnet.getAttribute('port-group'));
             return link;
-        },
-        markAvailable: true,
-        snapLinks: {radius: 75},
+        }
     });
-
-
-var filterId = paper.defineFilter({
-    name: 'dropShadow',
-    args: {
-        dx: 0,
-        dy: 3,
-        color: '#ccc',
-        blur: 1
-    }
-});
 
 // Canvas from which you take Flow shapes
 var flowControlGraph = new joint.dia.Graph,
@@ -346,6 +348,50 @@ var flowControlGraph = new joint.dia.Graph,
         model: flowControlGraph,
         interactive: false
     });
+
+// Link connect event
+paper.on('link:connect', function(linkView, evt, connectedTo, magnetElement) {
+
+    //Check the Triggers connection
+    if(!connectedTo.model.attributes.inPorts.length){
+        linkView.remove();
+        return toastr.error('Triggers dont allow in coming connection.')
+    }
+
+    //Set link anchor
+    selected = linkView.model;
+    var currentPort = selected.prop('source/port'),
+        currentTargetId = selected.prop('target/id');
+    logSourceTargetPorts(selected);
+
+    //Prevent duplicate links
+    var links = graph.getLinks(),
+        portArray = [];
+    if(links.length > 1){
+        links.forEach(function(link){
+            var checkPort = link.prop('source/portId'),
+                checkId = link.prop('target/id');
+
+            if (((currentPort === checkPort) && (currentTargetId === checkId)) ){
+                portArray.push(checkPort)
+            }
+
+            if(portArray.length>1){
+                linkView.remove();
+            }
+        })}
+});
+
+// Define shadow filter
+var filterId = paper.defineFilter({
+    name: 'dropShadow',
+    args: {
+        dx: 0,
+        dy: 3,
+        color: '#ccc',
+        blur: 1
+    }
+});
 
 joint.shapes.devs.TimerModel = joint.shapes.basic.Circle.extend({
     markup: '<g class="paper"><rect class="body-paper"/><text class="body-text"/><text class="del-icon"/><rect class="ports-hover-area"/></g><g class="container-ports"><circle class="ports-on-hover"/><text class="ports-icon"/></g><g class="stencil"><g class="scalable"><circle class="body"/></g><image class="stencil-icon"/><text class="label"/></g>',
@@ -363,7 +409,7 @@ joint.shapes.devs.TimerModel = joint.shapes.basic.Circle.extend({
                 magnet: "passive"
             },
             /*'.body-paper': {
-                magnet: 'active'
+                magnet: 'passive'
             },*/
             '.ports-hover-area': {
                 width: 100,
@@ -395,6 +441,47 @@ joint.shapes.devs.TimerModel = joint.shapes.basic.Circle.extend({
     }, joint.shapes.devs.Model.prototype.defaults),
 
 });
+
+var blockSidebar = new joint.shapes.devs.TimerModel({
+    position: {
+        x: 15,
+        y: 20
+    },
+    attrs: {
+
+        '.stencil':{
+            display:'none'
+        },
+        '.body-text': {
+            'text': 'Drag & Drop Action/\n Condition / FlowControl \n block from sidebar',
+            'fill': '#666',
+            lineHeight: '16',
+            display:'block',
+            'ref-x': 45,
+            'ref-y': -5,
+
+        },
+        '.body-paper': {
+            width: "230",
+            height: "72",
+            transform: "translate(20, -20)",
+            rx: "8",
+            ry: "8",
+            strokeWidth:2 ,
+            stroke:'#bbb',
+            strokeDasharray:5,
+            fill:'hsla(0,0,"%100",0)',
+            display:'block'
+        },
+        '.container-ports':{
+            display:'none'
+        }
+    },
+    cellsDetail: {
+        type: 'block',
+    }
+});
+
 var Time = new joint.shapes.devs.TimerModel({
     position: {
         x: 15,
@@ -425,6 +512,8 @@ var Time = new joint.shapes.devs.TimerModel({
         ]
 
     },
+    inPorts: ['in'],
+    outPorts: ['On Send','On Open','On Click','On Unsubscribe','On Bounce'],
     cellsDetail: {
         type: 'Time',
     }
@@ -453,6 +542,8 @@ var TimeSlots = new joint.shapes.devs.TimerModel({
             {group: 'On Failure'}
         ]
     },
+    inPorts: ['in'],
+    outPorts: ['On Success','On Failure'],
     cellsDetail: {
         type: 'TimeSlots',
     }
@@ -476,12 +567,13 @@ var WaitEvent = new joint.shapes.devs.TimerModel({
     },
     ports: {
         items: [
-
             {group: 'in'},
             {group: 'out'}
         ]
 
     },
+    inPorts: ['in'],
+    outPorts: ['out'],
     cellsDetail: {
         type: 'WaitEvent',
     }
@@ -537,12 +629,15 @@ var EndJourney = new joint.shapes.devs.TimerModel({
             {group: 'out'}
         ]
     },
+    inPorts: ['in'],
+    outPorts: ['Out'],
     cellsDetail: {
         type: 'EndJourney',
     }
 });
 
 flowControlGraph.addCells([Time, TimeSlots, WaitEvent, WaitDate, EndJourney]);
+
 
 
 // Canvas from which you take Condition shapes
@@ -572,7 +667,7 @@ joint.shapes.devs.PathModel = joint.shapes.basic.Path.extend({
                 magnet: "passive"
             },
             /*'.body-paper': {
-                magnet: 'active'
+                magnet: 'passive'
             },*/
             '.ports-hover-area': {
                 width: 100,
@@ -601,7 +696,7 @@ joint.shapes.devs.PathModel = joint.shapes.basic.Path.extend({
                 'ref-y': '7',
                 'ref-x': '7',
             },
-            '.ports-on-hover': {fill: '#FF9800'}
+            '.ports-on-hover': {fill: '#FF9800'},
         }
     }, joint.shapes.devs.Model.prototype.defaults)
 });
@@ -628,6 +723,8 @@ var Segment = new joint.shapes.devs.PathModel({
             {group: 'out'}
         ]
     },
+    inPorts: ['in'],
+    outPorts: ['out'],
     cellsDetail: {
         type: 'Segment',
     }
@@ -655,6 +752,8 @@ var DoneEvent = new joint.shapes.devs.PathModel({
             {group: 'out'},
         ]
     },
+    inPorts: ['in'],
+    outPorts: ['out'],
     cellsDetail: {
         type: 'DoneEvent',
     }
@@ -682,6 +781,8 @@ var CheckUserAttribute = new joint.shapes.devs.PathModel({
             {group: 'out'},
         ]
     },
+    inPorts: ['in'],
+    outPorts: ['out'],
     cellsDetail: {
         type: 'CheckUserAttribute',
     }
@@ -709,6 +810,8 @@ var CheckUserReachability = new joint.shapes.devs.PathModel({
             {group: 'out'}
         ]
     },
+    inPorts: ['in'],
+    outPorts: ['out'],
     cellsDetail: {
         type: 'CheckUserReachability',
     }
@@ -743,6 +846,9 @@ joint.shapes.devs.ActionModel = joint.shapes.basic.Path.extend({
             '.paper': {
                 magnet: "passive"
             },
+            /*'.body-paper':{
+                magnet: "passive"
+            },*/
             '.ports-hover-area': {
                 width: 100,
                 height: 75,
@@ -785,15 +891,14 @@ var AppMessage = new joint.shapes.devs.ActionModel({
         },
         '.stencil-icon': {
             'xlink:href': "images/check.png",
-        }
+        },
     },
     ports: {
         items: [
-            {group: 'in'},
             {group: 'out'}
         ]
-
     },
+    outPorts: ['out'],
     cellsDetail: {
         type: 'AppMessage',
     }
@@ -820,8 +925,9 @@ var WebMessage = new joint.shapes.devs.ActionModel({
             {group: 'in'},
             {group: 'out'}
         ]
-
     },
+    inPorts: ['in'],
+    outPorts: ['out'],
     cellsDetail: {
         type: 'WebMessage',
     }
@@ -851,6 +957,8 @@ var WebPush = new joint.shapes.devs.ActionModel({
         ]
 
     },
+    inPorts: ['in'],
+    outPorts: ['out'],
     cellsDetail: {
         type: 'WebPush',
     }
@@ -877,8 +985,9 @@ var CallApi = new joint.shapes.devs.ActionModel({
             {group: 'in'},
             {group: 'out'}
         ]
-
     },
+    inPorts: ['in'],
+    outPorts: ['out'],
     cellsDetail: {
         type: 'CallApi',
     }
@@ -905,8 +1014,9 @@ var SetUser = new joint.shapes.devs.ActionModel({
             {group: 'in'},
             {group: 'out'}
         ]
-
     },
+    inPorts: ['in'],
+    outPorts: ['out'],
     cellsDetail: {
         type: 'SetUser',
     }
@@ -1141,6 +1251,11 @@ flowControlPaper.on('cell:pointerdown', function (cellView, e, x, y) {
 
 });
 
+/* =======================================
+ * BREAK TEXT
+ * =======================================
+ */
+
 var oldBreakText = joint.util.breakText;
 joint.util.breakText = function (text, size, styles, opt) {
     var height = size.height;
@@ -1186,39 +1301,42 @@ joint.util.breakText = function (text, size, styles, opt) {
  * ZOOM CANVAS
  * =======================================
  */
-/*var minimapNavigatorPosition = {
-    minX: 50,
-    minY: 20,
-    maxX: 70,
-    maxY: 40,
-};*/
+
+var minimapNavigatorPosition = {
+    minX: 5,
+    minY: 5,
+    maxX: 80,
+    maxY: 65
+};
 var scale = 0.1;
+
 var zoomCanvas = new joint.dia.Paper({
     el: document.getElementById('zoomCanvas'),
-    width: 255,
-    height: 125 ,
+    width: config.paperWidth * scale/2,
+    height: config.paperHeight * scale/2,
     model: graph,
     embeddingMode: false,
     linkPinning: false,
-    interactive:false
+    interactive: false
 });
-
-
 zoomCanvas.scale(scale);
 
-/*$('.zoomContainer').height(config.paperWidth * scale);
-$('.zoomContainer').width(config.paperHeight * scale);*/
+/*
+$('.paper').height(config.paperWidth * scale/2);
+$('.paper').width(config.paperHeight * scale/2);
+*/
 
 // Set minimap navigator width, height
-var containerWidthHeight = $('.main-content').width(); // height, width both are set to same in css
-$('.current-view').width(containerWidthHeight * scale - 20);
-$('.current-view').height(containerWidthHeight * scale - 20);
+var containerWidth = $('.paper-scroller').width(); // height, width both are set to same in css
+var containerHeight = $('.paper-scroller').height(); // height, width both are set to same in css
+$('.current-view').width(containerWidth * scale );
+$('.current-view').height(containerHeight * scale);
 
 // Bind container scrolling
-/*$('.main-content').scroll(function (e) {
+$('.paper-scroller').scroll(function (e) {
     $('.current-view').css('top', minimapNavigatorPosition.minY + e.target.scrollTop * scale);
     $('.current-view').css('left', minimapNavigatorPosition.minX + e.target.scrollLeft * scale);
-});*/
+});
 
 // Bind minimap navigator drag
 var dragFlag = false;
@@ -1226,8 +1344,10 @@ var x = 0;
 var y = 0;
 $('.current-view').mousedown(function (e) {
     dragFlag = true;
+
     x = $(this).offset().left - e.clientX;
     y = $(this).offset().top - e.clientY;
+    console.log('mouseDown'+ x,y)
 });
 $('.current-view').mouseup(function () {
     dragFlag = false;
@@ -1236,12 +1356,11 @@ $('.zoomContainer').mouseleave(function () {
     dragFlag = false;
 });
 $('.current-view').mousemove(function (e) {
-
     if (dragFlag) {
-        debugger
         var newY = e.clientY + y;
         var newX = e.clientX + x;
-        /*if (minimapNavigatorPosition.minY > newY) {
+        console.log('NEW   '+newY,newX)
+        if (minimapNavigatorPosition.minY > newY) {
             newY = minimapNavigatorPosition.minY;
         }
         if (minimapNavigatorPosition.minX > newX) {
@@ -1252,17 +1371,12 @@ $('.current-view').mousemove(function (e) {
         }
         if (minimapNavigatorPosition.maxX < newX) {
             newX = minimapNavigatorPosition.maxX;
-        }*/
-        $('.current-view').css('top', Math.abs(y));
-        $('.current-view').css('left', Math.abs(x));
+        }
+        $('.current-view').css('top', newY);
+        $('.current-view').css('left', newX);
 
-        debugger
-        paper.translate(
-            e.offsetX - newX ,
-            e.offsetY - newY);
-        /*$('.main-content').scrollLeft((newX - minimapNavigatorPosition.minX) / scale);
-        $('.main-content').scrollTop((newY - minimapNavigatorPosition.minY) / scale);*/
-
+        $('.paper-scroller').scrollLeft((newX - minimapNavigatorPosition.minX) / scale);
+        $('.paper-scroller').scrollTop((newY - minimapNavigatorPosition.minY) / scale);
     }
 });
 
@@ -1283,9 +1397,12 @@ $('#zoomCanvas').on('mousewheel DOMMouseScroll', function (e) {
 });
 
 $('#zoom-out').on('click', function () {
-    var ctm = paper.viewport.getCTM();
+    var ctm = paper.viewport.getCTM(),
+        ctmZoom = zoomCanvas.viewport.getCTM();
     paper.translate(0,0);
+    zoomCanvas.translate(0,0);
     paper.scale(Math.max(ctm.a - scale, scale), Math.max(ctm.d - scale, scale));
+    zoomCanvas.scale(Math.max(ctmZoom.a - scale/2, scale/2), Math.max(ctmZoom.d - scale/2, scale/2));
 });
 
 $('#zoom-in').on('click', function () {
@@ -1299,7 +1416,8 @@ $('#zoom-reset').on('click', function () {
     paper.scale(1);
 });
 
-var dragStartPosition;
+
+/*var dragStartPosition;
 paper.on('blank:pointerdown', function (event, x, y) {
     var scale = V(paper.viewport).scale();
     dragStartPosition = {x: x * scale.sx, y: y * scale.sy};
@@ -1314,28 +1432,97 @@ paper.on('cell:pointerup blank:pointerup', function(cellView, x, y) {
     delete dragStartPosition;
 });
 
+
 $("#paper").mousemove(function (event,x,y) {
     if(dragStartPosition)
         paper.translate(
             event.offsetX - dragStartPosition.x,
             event.offsetY - dragStartPosition.y);
-});
 
-paper.on('cell:pointerup', function (cellView, evt) {
+});*/
+
+
+paper.on('cell:pointermove',function(cellView, event, x, y) {
+
+        var posX = cellView.model.prop('position/x');
+        var posY = cellView.model.prop('position/y');
+        var paperW = $('#paper').width();
+        var paperH = $('#paper').height();
+
+        var zoomCanvasW = $('#zoomCanvas').width();
+        var zoomCanvasH = $('#zoomCanvas').height();
+
+        if(posX <= 5 && posY <= 5){
+            paper.setDimensions(paperW + 300,paperH + 300);
+            cellView.model.prop('position/x',300);
+            cellView.model.prop('position/y',300);
+        }
+        else if( posX <= 5){
+            paper.setDimensions(paperW + 300,config.paperHeight);
+            cellView.model.prop('position/x',300);
+
+        }else if(posY <= 5){
+            paper.setDimensions(config.paperWidth,paperH + 300);
+            cellView.model.prop('position/y',300);
+
+        }else if(posX >= (paperW - 300) && posY >= (paperH - 300)){
+            paper.setDimensions(paperW + 300,paperH + 300);
+            cellView.model.prop('position/x',posX);
+            cellView.model.prop('position/y',posY);
+        }else if(posX >= (paperW - 300) ){
+            paper.setDimensions(paperW + 300 , config.paperHeight);
+            cellView.model.prop('position/x',posX);
+        }else if(posY >= (paperH - 300)){
+            paper.setDimensions(config.paperWidth , paperH + 300);
+            cellView.model.prop('position/y',posY );
+        }
+
+        if((posX >= 600 && zoomCanvasW < 180)){
+            zoomCanvas.setDimensions(zoomCanvasW + 20,zoomCanvasH)
+        } else if(zoomCanvasW > 180 || posY > 840 ){
+            zoomCanvas.setDimensions(zoomCanvasW -20 ,zoomCanvasH)
+            var ctmZoom = zoomCanvas.viewport.getCTM();
+            zoomCanvas.scale(Math.max(ctmZoom.a - scale/1.2, scale/1.2), Math.max(ctmZoom.d - scale/1.2, scale/1.2));
+        }else {
+            zoomCanvas.setDimensions(config.paperWidth * scale/2 ,config.paperHeight * scale/2)
+        }
+
+    }
+);
+
+paper.on('cell:pointerup', function (cellView, evt,x,y) {
     var elem = cellView.model;
     var sourceId = elem.prop('source/id');
     var targetId = elem.prop('target/id');
+
+    blockSidebar.prop('position/x',x);
+    blockSidebar.prop('position/y',y);
+    var blockSidebarClone = blockSidebar.clone();
+
     if (elem instanceof joint.dia.Link && (!sourceId || !targetId)) {
+        var l =new joint.dia.Link({
+            source: { id: sourceId },
+            target: { id: blockSidebarClone.id },
+            attrs: {
+                '.marker-target': {d: 'M 10 0 L 0 5 L 10 10 z', fill: '#ccc', stroke: '#ccc'},
+                '.connection': {stroke: "#ccc", strokeWidth: 3},
+                '.marker-source': {
+                    d: 'M 0 0 a 7 7 0 1 0 0 1',
+                    'stroke': '#ccc',
+                    fill:'#fff'
+                },
+            }
+        });
+        graph.addCells([blockSidebarClone,l]);
         elem.remove()
     }
 });
 
 paper.on('element:del-icon:pointerdown', function (elementView, evt) {
     evt.stopPropagation();
-    // var model = elementView.model;
-    deleteCell(elementView)
-
+    deleteCell(elementView);
 });
+
 var selected;
 paper.on('cell:mouseover', function (cellView, evt) {
     selected = cellView.model;
@@ -1389,18 +1576,16 @@ paper.on('cell:mouseout', function (cellView, evt) {
             display: 'none'
         }
     });
-
-    if (selected.isLink()) {
-        logSourceTargetPorts(selected);
-    }
 });
 
 function logSourceTargetPorts(link) {
     var source = link.get('source');
     var target = link.get('target');
-    selected.source({id: source.id, anchor: {name: 'center', args: {dy: -15}}})
+    selected.source({id: source.id, anchor: {name: 'center', args: {dy: -15}},portId: source.port})
+    selected.target({id: target.id, anchor: {name: 'center', args: {dy: -10}}});
 }
 
+// DELETE MODAL
 function deleteCell(cellView) {
     $('body').append(
         `<div class="modal fade modal-danger" id="ModelDelete" role="dialog">
@@ -1440,7 +1625,9 @@ function deleteCell(cellView) {
 }
 
 function f() {
-    console.log(graph.toJSON())
+    var Json = graph.toJSON(),
+        addjson = JSON.stringify(Json);
+    console.log(addjson);
 }
 
 $(document).ready(function () {
@@ -1462,5 +1649,3 @@ $(document).ready(function () {
     });
 
 });
-
-

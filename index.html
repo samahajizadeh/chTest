@@ -27,14 +27,22 @@
 
     <!-- Joint CSS -->
     <link rel="stylesheet" href="node_modules/jointjs/dist/joint.min.css">
+    <link rel="stylesheet" href="node_modules/toastr/build/toastr.min.css">
+
     <!-- JointJS Dependencies -->
-    <script src="node_modules/jquery/dist/jquery.min.js"></script>
+    <!--<script src="node_modules/jquery/dist/jquery.min.js"></script>-->
+    <script
+            src="https://code.jquery.com/jquery-2.1.4.min.js"
+            integrity="sha256-8WqyJLuWKRBVhxXIL1jBDD7SDxU936oZkCnxQbWwJVw="
+            crossorigin="anonymous"></script>
     <script src="node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
 
-    <script src="node_modules/lodash/lodash.min.js"></script>
+    <!--    <script src="node_modules/lodash/lodash.js"></script>-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.4/lodash.js"></script>
     <script src="node_modules/backbone/backbone.js"></script>
     <!-- JointJS -->
     <script src="node_modules/jointjs/dist/joint.min.js"></script>
+    <script src="node_modules/toastr/build/toastr.min.js"></script>
 
 </head>
 <body>
@@ -44,64 +52,64 @@
     MENU SECTION
     =================================
     -->
-    <aside class="menubar">
-        <div class="sidebar left">
-            <ul class="list-sidebar panel-group" id="openMenu">
-                <li class="panel">
-                    <a data-toggle="collapse" data-target="#action" class="collapsed active" data-parent="#openMenu">
-                        <span class="nav-label">ACTION</span> <span
-                            class="fa fa-chevron-down pull-right"></span> </a>
-                    <ul class="sub-menu collapse show" id="action">
-                        <li id="actionControl"></li>
-                    </ul>
-                </li>
-                <li class="panel">
-                    <a data-toggle="collapse" data-target="#condition" class="collapsed active" data-parent="#openMenu">
-                        <span class="nav-label">CONDITION</span> <span
-                            class="fa fa-chevron-down pull-right"></span> </a>
-                    <ul class="sub-menu collapse show" id="condition">
-                        <li id="conditionControl"></li>
-                    </ul>
-                </li>
-                <li class="panel">
-                    <a data-toggle="collapse" data-target="#flowControlMenu" class="active" data-parent="#openMenu">
-                        <span class="nav-label">FLOW CONTROL</span>
-                        <span class="fa fa-chevron-down pull-right"></span> </a>
-                    <ul class="sub-menu collapse show" id="flowControlMenu">
-                        <li id="flowControl"></li>
-                    </ul>
-                </li>
-            </ul>
-        </div>
+    <aside class="sidebar">
+        <ul class="list-sidebar panel-group" id="openMenu">
+            <li class="panel">
+                <a data-toggle="collapse" data-target="#action" class="collapsed active" data-parent="#openMenu">
+                    <span class="nav-label">ACTION</span> <span
+                        class="fa fa-chevron-down pull-right"></span> </a>
+                <ul class="sub-menu collapse show" id="action">
+                    <li id="actionControl"></li>
+                </ul>
+            </li>
+            <li class="panel">
+                <a data-toggle="collapse" data-target="#condition" class="collapsed active" data-parent="#openMenu">
+                    <span class="nav-label">CONDITION</span> <span
+                        class="fa fa-chevron-down pull-right"></span> </a>
+                <ul class="sub-menu collapse show" id="condition">
+                    <li id="conditionControl"></li>
+                </ul>
+            </li>
+            <li class="panel">
+                <a data-toggle="collapse" data-target="#flowControlMenu" class="collapsed active" data-parent="#openMenu">
+                    <span class="nav-label">FLOW CONTROL</span>
+                    <span class="fa fa-chevron-down pull-right"></span> </a>
+                <ul class="sub-menu collapse show" id="flowControlMenu">
+                    <li id="flowControl"></li>
+                </ul>
+            </li>
+        </ul>
     </aside>
+
     <!--
     =================================
     CONTENT SECTION
     =================================
     -->
     <main class="main-content">
-        <div id="paper">
+        <div class="paper-scroller">
+            <div id="paper">
+            </div>
+            <div class="snaplines" style="display: none;">
+                <div class="snapline horizontal"></div>
+                <div class="snapline vertical"></div>
+            </div>
         </div>
-        <div class="zoom">
-            <div class="zoomContainer">
+
+        <div class="zoomContainer">
+            <div class="navigator joint-theme-default">
                 <div id="zoomCanvas"></div>
-                <div class="current-view">
-                    <div class="current-view-control"></div>
-                </div>
             </div>
 
-<!--            <button onclick="f()">r</button>-->
-            <div class="btn-zoom">
-                <div id="zoom-in" title="Zoom in"><i class="fa fa-plus"></i></div>
-                <div id="zoom-out" title="Zoom out"><i class="fa fa-minus"></i></div>
-                <div id="zoom-reset" title="Reset"><i class="fa fa-undo"></i></div>
-
+            <div class="current-view">
+                <div class="current-view-control"></div>
             </div>
         </div>
-
-        <div class="snaplines" style="display: none;">
-            <div class="snapline horizontal"></div>
-            <div class="snapline vertical"></div>
+        <div class="btn-zoom">
+            <button onclick="f()">r</button>
+            <div id="zoom-in" title="Zoom in"><i class="fa fa-plus"></i></div>
+            <div id="zoom-out" title="Zoom out"><i class="fa fa-minus"></i></div>
+            <div id="zoom-reset" title="Reset"><i class="fa fa-undo"></i></div>
         </div>
     </main>
 </div>
